@@ -4,12 +4,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
+#include <sstream>
 #include <assert.h>
 #include <cstdint>
 #include <string>
 #include <fstream>
 //#include <iostream>
 
+using namespace std;
 
 #define P3_INPUT_SIZE 999988944
 #define P4_INPUT_SIZE 985154324 // out3 size
@@ -462,6 +465,260 @@ bool cat(char const * filename_from1, char const * filename_from2, char const * 
   return true;
 }
 
+string strip(const string& str) {
+    size_t start = str.find_first_not_of(" \t\n\r\f\v");
+    size_t end = str.find_last_not_of(" \t\n\r\f\v");
+
+    return (start == string::npos) ? "" : str.substr(start, end - start + 1);
+}
+
+int transform() {
+const vector<string> replaceStrings = {
+      "<title>", "</title>",
+      "<id>", "</id>",
+      "<restrictions>", "</restrictions>",
+      "<id>", "</id>",
+      "<timestamp>", "</timestamp>",
+      "<username>", "</username>",
+      "<id>", "</id>",
+      "<ip>", "</ip>",
+      "<minor />", "<minor />",
+      "<comment>", "</comment>"
+  };
+
+  vector<string> xml_data(10);
+
+  // Open the binary file for reading
+  string file_name = ".main_phda9prepr";
+  string result_file_name = ".transformed_phda9prepr";
+
+  bool isStarted = false;
+  bool isCommentStarted = false;
+  bool isTextStarted = false;
+  string page_data;
+  string text_data;
+  string comment_data;
+  int cnt = 0;
+
+  ifstream input_file(file_name);
+  ofstream output_file(result_file_name, ios::binary);
+
+  if (!input_file.is_open()) {
+      cerr << "Failed to open the input file!" << endl;
+      return 1;
+  }
+
+  if (!output_file.is_open()) {
+      cerr << "Failed to open the output file!" << endl;
+      return 1;
+  }
+
+  string line;
+  while (getline(input_file, line)) {
+      string stripped_line = strip(line);
+      page_data.append(line).append("\n");
+
+      if (stripped_line.find("<comment>") != string::npos) {
+          comment_data.clear();
+          isCommentStarted = true;
+      }
+
+      if (isCommentStarted) {
+          comment_data.append(line).append("\n");
+          if (stripped_line.find("</comment>") != string::npos) {
+              isCommentStarted = false;
+          }
+          continue;
+      }
+
+      if (stripped_line.find("<text") != string::npos) {
+          if (!isTextStarted) {
+              cnt++;
+              // cout << cnt << endl;
+              text_data.clear();
+              isTextStarted = true;
+          }
+      }
+
+      if (isTextStarted) {
+          text_data.append(line).append("\n");
+          if (stripped_line.find("</text>") != string::npos || 
+              (stripped_line.find("/>") != string::npos && stripped_line.find("<text") != string::npos)) {
+              isTextStarted = false;
+          }
+          continue;
+      }
+
+      if (stripped_line.find("<page>") != string::npos) {
+          fill(xml_data.begin(), xml_data.end(), "");
+          isStarted = true;
+      }
+
+      if (isStarted) {
+          for (size_t index = 0; index < 9; ++index) {
+              if (stripped_line.find(replaceStrings[index * 2]) != string::npos) {
+                  if (index == 1 && !xml_data[index].empty()) {
+                      index += 2;  // revision id
+                  }
+                  if (index == 3 && !xml_data[index].empty()) {
+                      index += 3;  // customer id
+                  }
+                  if (index == 8) {
+                      xml_data[index] = "_";
+                  } else {
+                      string temp = stripped_line;
+                      temp.erase(0, replaceStrings[index * 2].length());
+                      temp.erase(temp.length() - replaceStrings[index * 2 + 1].length());
+                      xml_data[index] = temp;
+                  }
+                  break;
+              }
+          }
+      } else {
+          output_file << line << "\n";
+      }
+
+      if (stripped_line.find("</page>") != string::npos) {
+          output_file << xml_data[0] << "\n"
+                      << xml_data[1] << "\n"
+                      << xml_data[2] << "\n"
+                      << xml_data[3] << "\n"
+                      << xml_data[4] << "\n"
+                      << xml_data[5] << "\n"
+                      << xml_data[6] << "\n"
+                      << xml_data[7] << "\n"
+                      << xml_data[8] << "\n"
+                      << comment_data
+                      << text_data;
+          page_data.clear();
+          comment_data.clear();
+      }
+  }
+
+  if (!page_data.empty()) {
+      output_file << page_data;
+  }
+
+  input_file.close();
+  output_file.close();
+
+  return 0;
+}
+
+int de_transform() {
+  string source_file_name = ".main_decomp";
+  string result_file_name = ".de_transformed_main";
+
+  bool isStarted = false;
+  bool isCommentStarted = false;
+  bool isTextStarted = false;
+  string page_data = "";
+  string comment_data = "";
+  string text_data = "";
+  int cnt = 0;
+
+  ifstream input_file(source_file_name);
+  ofstream output_file(result_file_name, ios::binary);
+
+  if (!input_file.is_open()) {
+      cerr << "Failed to open the input file!" << endl;
+      return 1;
+  }
+
+  if (!output_file.is_open()) {
+      cerr << "Failed to open the output file!" << endl;
+      return 1;
+  }
+
+  string line;
+  while (getline(input_file, line)) {
+      if (line.find("<comment>") != string::npos) {
+          isCommentStarted = true;
+          comment_data = "";
+      }
+      if (isCommentStarted) {
+          comment_data += line + "\n";
+      }
+      if (line.find("</comment>") != string::npos) {
+          isCommentStarted = false;
+      }
+
+      if (line.find("<text") != string::npos) {
+          isTextStarted = true;
+          text_data = "";
+      }
+      if (isTextStarted) {
+          text_data += line + "\n";
+      }
+
+      if (!isTextStarted && !isCommentStarted) {
+          page_data += line + "\n";
+      }
+
+      if (line.find("</text>") != string::npos || 
+          (line.find("<text") != string::npos && line.find("/>") != string::npos)) {
+          cnt++;
+          // cout << cnt << endl;
+
+          istringstream ss(page_data);
+          vector<string> data_list;
+          string temp_line;
+          while (getline(ss, temp_line)) {
+              data_list.push_back(temp_line);
+          }
+          page_data = "";
+
+          output_file << "  <page>\n";
+          output_file << "    <title>" << data_list[0] << "</title>\n";
+          output_file << "    <id>" << data_list[1] << "</id>\n";
+          if (!data_list[2].empty()) {
+              output_file << "    <restrictions>" << data_list[2] << "</restrictions>\n";
+          }
+          output_file << "    <revision>\n";
+          if (!data_list[3].empty()) {
+              output_file << "      <id>" << data_list[3] << "</id>\n";
+          }
+          if (!data_list[4].empty()) {
+              output_file << "      <timestamp>" << data_list[4] << "</timestamp>\n";
+          }
+          output_file << "      <contributor>\n";
+          if (!data_list[5].empty()) {
+              output_file << "        <username>" << data_list[5] << "</username>\n";
+          }
+          if (!data_list[6].empty()) {
+              output_file << "        <id>" << data_list[6] << "</id>\n";
+          }
+          if (!data_list[7].empty()) {
+              output_file << "        <ip>" << data_list[7] << "</ip>\n";
+          }
+          output_file << "      </contributor>\n";
+          if (data_list[8] == "_") {
+              output_file << "      <minor />\n";
+          }
+          output_file << comment_data;
+          output_file << text_data;
+          output_file << "    </revision>\n";
+          output_file << "  </page>\n";
+
+          isTextStarted = false;
+          comment_data = "";
+      }
+
+      if (line.find("</siteinfo>") != string::npos) {
+          output_file << page_data;
+          page_data = "";
+      }
+  }
+
+  output_file << page_data;
+  output_file << text_data;
+
+  input_file.close();
+  output_file.close();
+
+  return 0;
+}
+
 int phda9_prepr() {
   sed("\&lt;\/title\&gt;", "\&lt;\/tiqqqtle\&gt;", ".main_reordered", "out8");
   sed("\&amp;<", "\&amp;qqq<", "out8", "out7");
@@ -819,7 +1076,7 @@ int resto5(char const* argv[])
 
 int phda9_resto() {
   {
-    char const* argv[] = {".main_decomp", "out6d"};
+    char const* argv[] = {".de_transformed_main", "out6d"};
     prepr6(argv);
   }
   {

@@ -30,6 +30,7 @@ int Help() {
   printf("fx-cmix\n");
   printf("Compress:\n");
   printf("    to compress enwik9: cmix -e enwik9 [output]\n");
+  printf("    to compress enwik9 with transform : cmix -t enwik9 [output]\n");
   printf("    to create a header for hutter prize: cmix -h comp_dict_size comp_new_order_size decomp_input_size\n");
   printf("    with dictionary:    cmix -c [dictionary] [input] [output]\n");
   printf("    without dictionary: cmix -c [input] [output]\n");
@@ -316,7 +317,7 @@ bool RunDecompression(const std::string& input_path,
 int main(int argc, char** argv) {
   if ((argc != 1) && (argv[1][1] != 'h') && (argc < 4 || argc > 5 || strlen(argv[1]) != 2 || argv[1][0] != '-' ||
       (argv[1][1] != 'c' && argv[1][1] != 'd' && argv[1][1] != 'x' && argv[1][1] != 's' &&
-      argv[1][1] != 'n' && argv[1][1] != 'e' ))) {
+      argv[1][1] != 'n' && argv[1][1] != 'e' && argv[1][1] != 't' ))) {
     return Help();
   }
 
@@ -363,16 +364,20 @@ int main(int argc, char** argv) {
     }
     std::cout << "Cmix decompression finished" << std::endl;
 
-//    std::cout << "Prepared the decompressed file for restoring the order of articles" << std::endl;
     split4Decomp();
+   std::cout << "Prepared the decompressed file for restoring the order of articles" << std::endl;
+
+    // De-Transform before preprocessor
+    de_transform();
+   std::cout << "Revert Tranform before preprocessing" << std::endl;
 
     // apply phda9 preprocessor
-//    std::cout << "Revert phda9 preprocessing" << std::endl;
     phda9_resto();
+   std::cout << "Revert phda9 preprocessing" << std::endl;
 
     // change the order of articles in the input
-//    std::cout << "Restore article order" << std::endl;
     sort();
+   std::cout << "Restore article order" << std::endl;
 
     // merge all input parts after preprocessing
 //    std::cout << "Construct enwik9" << std::endl;
@@ -420,6 +425,72 @@ int main(int argc, char** argv) {
     // merge all input parts after preprocessing
 //    std::cout << "Merging all parts into one input file for cmix" << std::endl;
     cat(".main_phda9prepr", ".intro", "un1");
+    cat("un1", ".coda", ".ready4cmix");
+    // run compression
+    // std::cout << "Cmix compression..." << std::endl;
+    input_path = ".ready4cmix";
+    dictionary = fopen(".dict", "rb");
+    if (!RunCompression(enable_preprocess, input_path, temp_path, output_path,
+        dictionary, &input_bytes, &output_bytes)) {
+      return Help();
+    }
+//    std::cout << "Cmix compression finished" << std::endl;
+
+    // construct a selfextracting decompressor binary
+    // archive9 = decomp_binary(upxed) + comp_dict + cmix_output + header.dat
+//    std::cout << "Constructing the selfextracting archive9" << std::endl;
+
+    cat(".decomp_bin", ".dict.comp", "dec1");
+
+    // // get the size of the output file
+    size_t output_size = getFileSize(output_path);
+
+    HeaderInfo header;
+    read("test.dat", header);
+    header.decomp_input_size = output_size;
+    write("header4archive.dat", header);
+
+    cat("dec1", output_path.c_str(), "dec2");
+    cat("dec2", "header4archive.dat", "archive9");
+
+    //make the decompressor binary executable
+    char mode[] = "0777";
+    char buf[100] = "archive9";
+    int i = strtol(mode, 0, 8);
+    chmod(buf, i);
+
+  } else if (argv[1][1] == 't') {
+    // Compress enwik9
+    input_path = argv[2];
+    output_path = argv[3]; //name of a compressor output
+
+    // DEBUG
+   debugAllPrepare(input_path, output_path);// debug
+   return 0;
+    //DEBUG END
+
+   std::cout << "Uncompressing the dictionary and the file with the new order of articles" << std::endl;
+    // unpack a) cmix dictionary, b) new order of articles, c) actual cmix binary
+    selfextract_comp();
+
+   std::cout << "Preparing enwik9 for reordering" << std::endl;
+    split4Comp(input_path.c_str());
+
+    // change the order of articles in the input
+   std::cout << "Reordering enwik9 articles" << std::endl;
+    reorder();
+
+    // apply phda9 preprocessor
+   std::cout << "Applying phda9 preprocessor to the reordered enwik9" << std::endl;
+    phda9_prepr();
+
+    // remove all tags
+   std::cout << "Applying Transform to the preprocessed enwik9" << std::endl;
+    transform();
+
+    // merge all input parts after preprocessing
+   std::cout << "Merging all parts into one input file for cmix" << std::endl;
+    cat(".transformed_phda9prepr", ".intro", "un1");
     cat("un1", ".coda", ".ready4cmix");
     // run compression
     // std::cout << "Cmix compression..." << std::endl;
@@ -506,41 +577,49 @@ void debugAllPrepare(std::string input_path, std::string output_path) {
     // Compress enwik9
     // unpack a) cmix dictionary, b) new order of articles, c) actual cmix binary
     selfextract_comp();
-//    std::cout << __LINE__ << std::endl << std::flush;
+   std::cout << 'self-extracted' << std::endl << std::flush;
 
     split4Comp(input_path.c_str());
-//    std::cout << __LINE__ << std::endl << std::flush;
+   std::cout << 'splited for compress' << std::endl << std::flush;
 
     // change the order of articles in the input
     reorder();
- //   std::cout << __LINE__ << std::endl << std::flush;
+   std::cout << 'reordered' << std::endl << std::flush;
 
     // apply phda9 preprocessor
     phda9_prepr();
-//    std::cout << __LINE__ << std::endl << std::flush;
+   std::cout << 'applied phda9' << std::endl << std::flush;
+
+    // apply phda9 preprocessor
+    transform();
+   std::cout << 'transformed' << std::endl << std::flush;
 
     // merge all input parts after preprocessing
-    cat(".main_phda9prepr", ".intro", "un1");
+    cat(".transformed_phda9prepr", ".intro", "un1");
     cat("un1", ".coda", ".input_decomp");
-//    std::cout << __LINE__ << std::endl << std::flush;
+   std::cout << 'combined' << std::endl << std::flush;
 
 //-->
 
     split4Decomp();
-//    std::cout << __LINE__ << std::endl << std::flush;
+   std::cout << 'splitted for decompress' << std::endl << std::flush;
+
+    // apply De-Transform preprocessor
+    de_transform();
+   std::cout << 'un transformed' << std::endl << std::flush;
 
     // apply phda9 preprocessor
     phda9_resto();
-//    std::cout << __LINE__ << std::endl << std::flush;
+   std::cout << 'restored phda9' << std::endl << std::flush;
 
     // change the order of articles in the input
     sort();
-//    std::cout << __LINE__ << std::endl << std::flush;
+   std::cout << 'sorted' << std::endl << std::flush;
 
     // merge all input parts after preprocessing
     cat(".intro_decomp", ".main_decomp_restored_sorted", "un1_d");
     cat("un1_d", ".coda_decomp", "enwik9_restored");
 
-//    std::cout << "Finished" << std::endl << std::flush;
+   std::cout << "Finished" << std::endl << std::flush;
 }
 
