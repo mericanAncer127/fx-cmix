@@ -577,44 +577,44 @@ void debugAllPrepare(std::string input_path, std::string output_path) {
     // Compress enwik9
     // unpack a) cmix dictionary, b) new order of articles, c) actual cmix binary
     selfextract_comp();
-   std::cout << 'self-extracted' << std::endl << std::flush;
+   std::cout << "self-extracted" << std::endl << std::flush;
 
     split4Comp(input_path.c_str());
-   std::cout << 'splited for compress' << std::endl << std::flush;
+   std::cout << "splited for compress" << std::endl << std::flush;
 
     // change the order of articles in the input
     reorder();
-   std::cout << 'reordered' << std::endl << std::flush;
+   std::cout << "reordered" << std::endl << std::flush;
 
     // apply phda9 preprocessor
     phda9_prepr();
-   std::cout << 'applied phda9' << std::endl << std::flush;
+   std::cout << "applied phda9" << std::endl << std::flush;
 
     // apply phda9 preprocessor
     transform();
-   std::cout << 'transformed' << std::endl << std::flush;
+   std::cout << "transformed" << std::endl << std::flush;
 
     // merge all input parts after preprocessing
     cat(".transformed_phda9prepr", ".intro", "un1");
     cat("un1", ".coda", ".input_decomp");
-   std::cout << 'combined' << std::endl << std::flush;
+   std::cout << "combined" << std::endl << std::flush;
 
 //-->
 
     split4Decomp();
-   std::cout << 'splitted for decompress' << std::endl << std::flush;
+   std::cout << "splitted for decompress" << std::endl << std::flush;
 
     // apply De-Transform preprocessor
     de_transform();
-   std::cout << 'un transformed' << std::endl << std::flush;
+   std::cout << "un transformed" << std::endl << std::flush;
 
     // apply phda9 preprocessor
     phda9_resto();
-   std::cout << 'restored phda9' << std::endl << std::flush;
+   std::cout << "restored phda9" << std::endl << std::flush;
 
     // change the order of articles in the input
     sort();
-   std::cout << 'sorted' << std::endl << std::flush;
+   std::cout << "sorted" << std::endl << std::flush;
 
     // merge all input parts after preprocessing
     cat(".intro_decomp", ".main_decomp_restored_sorted", "un1_d");
