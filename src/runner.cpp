@@ -598,15 +598,11 @@ void debugAllPrepare(std::string input_path, std::string output_path) {
     cat(".transformed_phda9prepr", ".intro", "un1");
     cat("un1", ".coda", ".input_decomp");
     
-  int size_t = std::ifstream(".transformed_phda9prepr", std::ifstream::ate | std::ifstream::binary).tellg();
-  int size_i = std::ifstream(".intro", std::ifstream::ate | std::ifstream::binary).tellg(); size_i += size_t;
-  int size_c = std::ifstream(".coda", std::ifstream::ate | std::ifstream::binary).tellg(); size_c += size_i;
    std::cout << "combined" << std::endl << std::flush;
 
 //-->
 
-    split4Decomp(size_t, size_i, size_c);
-    std::cout << "main: " << size_t << "intro: " << size_i << "coda: " << size_c << std::endl << std::flush;
+    split4Decomp();
    std::cout << "splitted for decompress" << std::endl << std::flush;
 
     // apply De-Transform preprocessor

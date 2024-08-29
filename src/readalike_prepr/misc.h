@@ -5,9 +5,9 @@
 #define COMP_MAIN_END_LINE  13146932
 #define COMP_CODA_END_LINE  13147025
 
-#define DECOMP_MAIN_END_LINE  13146905
-#define DECOMP_INTRO_END_LINE 13146934 
-#define DECOMP_CODA_END_LINE  13147027
+#define DECOMP_MAIN_END_LINE  12354827
+#define DECOMP_INTRO_END_LINE 12353856
+#define DECOMP_CODA_END_LINE  12354951
 
 void split4Comp(char const *enwik9_filename) {
   std::ifstream ifile(enwik9_filename); 
@@ -36,7 +36,7 @@ void split4Comp(char const *enwik9_filename) {
   ofile3.close();
 }
 
-void split4Decomp(int size_t, int size_i, int size_c) {
+void split4Decomp() {
   std::ifstream ifile(".input_decomp"); 
   std::ofstream ofile1(".intro_decomp"); 
   std::ofstream ofile2(".main_decomp"); 
@@ -46,12 +46,18 @@ void split4Decomp(int size_t, int size_i, int size_c) {
 
   std::string s;
   while (std::getline(ifile, s)) {
-    if (line_count < size_t) {
+    if (line_count < DECOMP_MAIN_END_LINE) {
       ofile2 << s << std::endl;
-    } else if (line_count < size_i) {
+      if(line_count == DECOMP_MAIN_END_LINE - 1)
+        std::cout << s << std::endl << std::flush;
+    } else if (line_count < DECOMP_INTRO_END_LINE) {
         ofile1 << s << std::endl;
-      } else if (line_count < size_c) {
+        if(line_count == DECOMP_INTRO_END_LINE - 1)
+          std::cout << s << std::endl << std::flush;
+      } else if (line_count < DECOMP_CODA_END_LINE) {
           ofile3 << s << std::endl;
+          if(line_count == DECOMP_CODA_END_LINE - 1)
+            std::cout << s << std::endl << std::flush;
           } else {
             ofile3 << s; 
           }
