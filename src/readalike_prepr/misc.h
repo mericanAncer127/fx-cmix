@@ -36,7 +36,7 @@ void split4Comp(char const *enwik9_filename) {
   ofile3.close();
 }
 
-void split4Decomp() {
+void split4Decomp(int size_t, int size_i, int size_c) {
   std::ifstream ifile(".input_decomp"); 
   std::ofstream ofile1(".intro_decomp"); 
   std::ofstream ofile2(".main_decomp"); 
@@ -46,11 +46,11 @@ void split4Decomp() {
 
   std::string s;
   while (std::getline(ifile, s)) {
-    if (line_count < 13146905) {
+    if (line_count < size_t) {
       ofile2 << s << std::endl;
-    } else if (line_count < 13146934) {
+    } else if (line_count < size_i) {
         ofile1 << s << std::endl;
-      } else if (line_count < 13147027) {
+      } else if (line_count < size_c) {
           ofile3 << s << std::endl;
           } else {
             ofile3 << s; 

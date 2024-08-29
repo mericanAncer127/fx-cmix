@@ -364,7 +364,7 @@ int main(int argc, char** argv) {
     }
     std::cout << "Cmix decompression finished" << std::endl;
 
-    split4Decomp();
+    // split4Decomp(size_t, size_i, size_c);
    std::cout << "Prepared the decompressed file for restoring the order of articles" << std::endl;
 
     // De-Transform before preprocessor
@@ -597,11 +597,16 @@ void debugAllPrepare(std::string input_path, std::string output_path) {
     // merge all input parts after preprocessing
     cat(".transformed_phda9prepr", ".intro", "un1");
     cat("un1", ".coda", ".input_decomp");
+    
+  int size_t = ifstream(".transformed_phda9prepr", ifstream::ate | ifstream::binary).tellg();
+  int size_i = ifstream(".intro", ifstream::ate | ifstream::binary).tellg() + size_t;
+  int size_c = ifstream(".coda", ifstream::ate | ifstream::binary).tellg() + size_i;
    std::cout << "combined" << std::endl << std::flush;
 
 //-->
 
-    split4Decomp();
+    split4Decomp(size_t, size_i, size_c);
+    std::cout << "main: " << size_t << "intro: " << size_i << "coda: " << size_c << std::endl << std::flush;
    std::cout << "splitted for decompress" << std::endl << std::flush;
 
     // apply De-Transform preprocessor
