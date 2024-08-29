@@ -598,9 +598,9 @@ void debugAllPrepare(std::string input_path, std::string output_path) {
     cat(".transformed_phda9prepr", ".intro", "un1");
     cat("un1", ".coda", ".input_decomp");
     
-  int size_t = ifstream(".transformed_phda9prepr", ifstream::ate | ifstream::binary).tellg();
-  int size_i = ifstream(".intro", ifstream::ate | ifstream::binary).tellg() + size_t;
-  int size_c = ifstream(".coda", ifstream::ate | ifstream::binary).tellg() + size_i;
+  int size_t = std::ifstream(".transformed_phda9prepr", std::ifstream::ate | std::ifstream::binary).tellg();
+  int size_i = std::ifstream(".intro", std::ifstream::ate | std::ifstream::binary).tellg() + size_t;
+  int size_c = std::ifstream(".coda", std::ifstream::ate | std::ifstream::binary).tellg() + size_i;
    std::cout << "combined" << std::endl << std::flush;
 
 //-->
