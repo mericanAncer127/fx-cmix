@@ -6,7 +6,7 @@
 #define COMP_CODA_END_LINE  13147025
 
 #define DECOMP_MAIN_END_LINE  12354827
-#define DECOMP_INTRO_END_LINE 12353856
+#define DECOMP_INTRO_END_LINE 12354856
 #define DECOMP_CODA_END_LINE  12354951
 
 void split4Comp(char const *enwik9_filename) {
