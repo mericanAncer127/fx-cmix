@@ -15,12 +15,14 @@
 #include "readalike_prepr/self_extract.h"
 #include "readalike_prepr/phda9_preprocess.h"
 #include "readalike_prepr/misc.h"
+#include "readalike_prepr/f_transform.h"
 
 //#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
+
 
 namespace {
   const int kMinVocabFileSize = 10000;
@@ -371,6 +373,10 @@ int main(int argc, char** argv) {
     de_transform();
    std::cout << "Revert Tranform before preprocessing" << std::endl;
 
+    // apply De-Pattern based Transform preprocessor
+    pat_de_transform();
+    std::cout << "de_ pat transformed" << std::endl << std::flush;
+
     // apply phda9 preprocessor
     phda9_resto();
    std::cout << "Revert phda9 preprocessing" << std::endl;
@@ -484,13 +490,17 @@ int main(int argc, char** argv) {
    std::cout << "Applying phda9 preprocessor to the reordered enwik9" << std::endl;
     phda9_prepr();
 
+    // apply Pattern Based Transform
+   std::cout << "pattern transformed" << std::endl << std::flush;
+    pat_transform();
+
     // remove all tags
    std::cout << "Applying Transform to the preprocessed enwik9" << std::endl;
     transform();
 
     // merge all input parts after preprocessing
    std::cout << "Merging all parts into one input file for cmix" << std::endl;
-    cat(".transformed_phda9prepr", ".intro", "un1");
+    cat(".ex_pat.main_phda9prepr", ".intro", "un1");
     cat("un1", ".coda", ".ready4cmix");
     // run compression
     // std::cout << "Cmix compression..." << std::endl;
@@ -590,12 +600,16 @@ void debugAllPrepare(std::string input_path, std::string output_path) {
     phda9_prepr();
    std::cout << "applied phda9" << std::endl << std::flush;
 
+    // apply Pattern Based Transform
+    pat_transform();
+    std::cout << "pattern transformed" << std::endl << std::flush;
+
     // apply phda9 preprocessor
     transform();
    std::cout << "transformed" << std::endl << std::flush;
 
     // merge all input parts after preprocessing
-    cat(".transformed_phda9prepr", ".intro", "un1");
+    cat(".ex_pat.main_phda9prepr", ".intro", "un1");
     cat("un1", ".coda", ".input_decomp");
     
    std::cout << "combined" << std::endl << std::flush;
@@ -608,6 +622,10 @@ void debugAllPrepare(std::string input_path, std::string output_path) {
     // apply De-Transform preprocessor
     de_transform();
    std::cout << "un transformed" << std::endl << std::flush;
+
+    // apply De-Pattern based Transform preprocessor
+    pat_de_transform();
+    std::cout << "de_ pat transformed" << std::endl << std::flush;
 
     // apply phda9 preprocessor
     phda9_resto();

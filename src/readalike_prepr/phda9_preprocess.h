@@ -489,8 +489,8 @@ const vector<string> replaceStrings = {
   vector<string> xml_data(10);
 
   // Open the binary file for reading
-  string file_name = ".main_phda9prepr";
-  string result_file_name = ".transformed_phda9prepr";
+  string file_name = ".pat.main_phda9prepr";
+  string result_file_name = ".ex_pat.main_phda9prepr";
 
   bool isStarted = false;
   bool isCommentStarted = false;
@@ -607,7 +607,7 @@ const vector<string> replaceStrings = {
 
 int de_transform() {
   string source_file_name = ".main_decomp";
-  string result_file_name = ".de_transformed_main";
+  string result_file_name = ".de_ex_transformed_main";
 
   bool isStarted = false;
   bool isCommentStarted = false;
@@ -1076,7 +1076,7 @@ int resto5(char const* argv[])
 
 int phda9_resto() {
   {
-    char const* argv[] = {".de_transformed_main", "out6d"};
+    char const* argv[] = {".de_pat_transformed_main", "out6d"};
     prepr6(argv);
   }
   {
