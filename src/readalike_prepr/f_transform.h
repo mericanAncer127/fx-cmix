@@ -7,6 +7,8 @@
 #include <cctype>
 #include <algorithm>
 
+#include "phda9_preprocess.h"
+
 // Utility to convert a string to lower case (not required in this case)
 std::string to_lower(const std::string &str) {
     std::string result = str;
@@ -33,11 +35,6 @@ std::string rstrip_newline(const std::string &str) {
 std::string rstrip(const std::string &str) {
     size_t end = str.find_last_not_of(" \t\r\n");
     return (end == std::string::npos) ? "" : str.substr(0, end + 1);
-}
-
-// Utility to trim spaces from both sides of the string (equivalent to strip in Python)
-std::string strip(const std::string &str) {
-    return rstrip(lstrip(str));
 }
 
 // Helper function to write the pattern map
